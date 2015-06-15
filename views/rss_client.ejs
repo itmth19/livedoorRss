@@ -1,7 +1,235 @@
 <html>
   <head>
-    
+    <script src="/js/jquery-2.1.3.min.js"></script>
+    <link rel="stylesheet" href="/bootstrap/css/bootstrap.min.css"/>
+    <link rel="stylesheet" href="/styles/style_main.css"/>
+    <script src="/bootstrap/js/bootstrap.min.js"></script>
   </head>
+  <script>
+    $(document).ready(function(){
+      io.socket.get('/client/init', function(msg){
+        if(msg.status == true){
+          var categories = msg.categories;
+          GUI.buildGUI(categories);
+          RssClient.registerCategories(categories);
+          RssClient.requestAllCurrentFeed(categories);
+          RssClient.registerRelateFeed();
+        }
+      });
+
+      var RssClient = {};
+      RssClient.registerCategories = function(_categories){
+        // io.socket.get('/client/register_category',{category: _category}, function(data, handle){
+        //   console.log(data);
+        //   io.socket.on('onNewFeed')
+        // });
+        if(_categories){
+          $.each(_categories, function(i, _category){
+            io.socket.on('onNewFeed'+_category.name, function(data){
+              console.log(data);
+              if(data.status){
+                GUI.updateNewFeed(data.feed);
+              }
+            });
+          });
+        }
+      }
+
+      RssClient.registerRelateFeed = function(){
+        io.socket.on('onNewRelateFound', function(data){
+          if(data.status){
+            GUI.updateSimilarFeed(data.feed, data.relate);
+          }
+        });
+      }
+
+      RssClient.requestAllCurrentFeed = function(_categories){
+        io.socket.on('onFeed', function(data){
+          if(data.status){
+            GUI.updateCategory(data.category, data.feeds);
+          }
+        });
+
+        io.socket.get('/client/requestfeed', function(data, handle){
+          console.log(data);
+        });
+      }
+
+      var GUI = {};
+      GUI.buildGUI = function(categories){
+        var html='';
+        var tab_pane_html = '';
+        var tab_html = '';
+        $.each(categories, function(i, category){
+          tab_html+='<li role="presentation"><a href="#'+category.name+'" class="pill_category_'+category.name+'" aria-controls="home" role="tab" data-toggle="tab">'+category.label+'<span style="display:none;" class="icon glyphicon glyphicon-asterisk"></span></a></li>'
+          tab_pane_html+='<div role="tabpanel" class="tab-pane" id="'+category.name+'">'+Language.NOT_FOUND+'</div>';
+        });
+        tab_html+='<li role="presentation"><a href="#settings" class="pill_settings" aria-controls="home" role="tab" data-toggle="tab">表示設定<span class="glyphicon glyphicon-cog"></span></a></li>'
+        tab_pane_html+='<div role="tabpanel" class="tab-pane active" id="settings">'+GUI.generateSettings(categories)+'</div>';
+
+        html+='<div role="tabpanel">';
+        html+='<ul class="nav nav-tabs" role="tablist">';
+
+        html+=tab_html;
+        html+='</ul>';
+
+        html+='<div class="tab-content">';
+        html+=tab_pane_html;
+        html+='</div>';
+        html+='</div>';
+
+        $('#main_wrapper').append(html);
+        $('body').on('click','button.setting_category',function(){
+          $(this).toggleClass('btn-primary');
+          if($(this).hasClass('btn-primary')){
+            $("a.pill_category_" + $(this).attr('data')).show();
+          }else{
+            $("a.pill_category_" + $(this).attr('data')).hide();
+          }
+        });
+      }
+
+      GUI.generateSettings = function(categories){
+        var html = '<div class="row">';
+        $.each(categories, function(i, category){
+          html+='<button type="button" data="'+category.name+'" class="btn btn-sm btn-primary btn-block setting_category setting_category_'+category.name+'">'+category.label+'</button>';
+        });
+        // $("#settings").html(html);
+        html+='</div>';
+        return html;
+      }
+
+      GUI.shortenTitle = function(title){
+        if(title.length > Settings.MAX_TITLE_CHARS){
+          return title.substring(0, Settings.MAX_TITLE_CHARS) + "...";
+        }else{
+          return title;
+        }
+      }
+
+      GUI.updateSimilarFeed = function(feed, relate){
+        if($("a.pill_feed_" + feed.id).length){
+          var relate_html = '';
+          // $.each(relate, function(i, similar_feed){
+          relate_html+='<li><a href="'+relate.link+'">'+relate.title+'</a></li>';
+          // });
+          // relate_html+='</ul>';
+          $("#"+feed.id).append(relate_html);
+          $("a.pill_feed_" + feed.id + " span").fadeIn();
+          setTimeout(function(){
+            $("a.pill_feed_" + feed.id + " span").fadeOut('slow');
+          }, 60000);
+
+        }
+      }
+
+      GUI.updateNewFeed = function(feed){
+        // console.log(feed);
+        var pill_html=GUI.pillItemForFeed(feed);
+        var pill_pane_html=GUI.pillPaneForFeed(feed);
+
+        $("#"+feed.category+" .feed_list li:last-child").remove();
+        $("#"+feed.category+" .feed_list").prepend(pill_html);
+        $("#"+feed.category+" .feed_content").prepend(pill_pane_html);
+
+
+        $("a.pill_category_" + feed.category + " span").fadeIn();
+        setTimeout(function(){
+          $("a.pill_category_" + feed.category + " span").fadeOut('slow');
+        }, 60000);
+        $("a.pill_feed_" + feed.id + " span").fadeIn();
+        setTimeout(function(){
+          $("a.pill_feed_" + feed.id + " span").fadeOut('slow');
+        }, 60000);
+
+      }
+
+      GUI.pillPaneForFeed = function(feed){
+        var pill_pane_html = '';
+        var relate_html = '';
+
+        pill_pane_html+='<div id="'+feed.id+'" class="tab-pane fade in">';
+        pill_pane_html+='<h4>'+feed.title+'</h4>';
+        // pill_pane_html+='<span>'+feed.pubDate+'</span></br>';
+        pill_pane_html+='<span>'+feed.description+'</span>';
+
+        try{
+          if(feed.relate.length > 0){
+            relate_html+='<h5>関連する記事</h5><ul>';
+            $.each(feed.relate, function(i, similar_feed){
+              relate_html+='<li><a href="'+similar_feed.link+'">'+similar_feed.title+'</a></li>';
+            });
+            relate_html+='</ul>';
+          }else{
+            relate_html+='<h5>関連する記事</h5>';
+          }
+        }catch(err){
+          relate_html+='<h5>関連する記事</h5>';
+          // relate_html+= '<h5>' + Language.NOT_FOUND_SIMILAR + '</h5>';
+        }
+
+
+        pill_pane_html+=relate_html;
+        pill_pane_html+='</div>';
+
+        return pill_pane_html;
+      }
+
+      GUI.pillItemForFeed = function(feed){
+        var pill_html = '';
+        pill_html+='<li role="presentation"><a data-toggle="pill" class="pill_feed_'+feed.id+'" href="#'+feed.id+'">'+GUI.shortenTitle(feed.title)+'<span style="display:none;" class="badge">新着</span></a></li>';
+        return pill_html;
+      }
+
+      GUI.updateCategory = function(category, feeds){
+        // console.log(feeds);
+        if(category && feeds.length > 0){
+          var html = '';
+          var pill_html = '';
+          var pill_pane_html = '';
+
+          $.each(feeds, function(i, feed){
+            var relate_html = '';
+            pill_html += GUI.pillItemForFeed(feed);
+            pill_pane_html += GUI.pillPaneForFeed(feed);
+          });
+
+          html+='<div class="row"><div class="col-md-6 col-xs-6">';
+          html+='<ul class="nav nav-pills nav-stacked feed_list">';
+          html+=pill_html;
+          html+='</ul>';
+          html+='</div>'
+
+          html+='<div class="col-md-6 col-xs-6">';
+          html+='<div class="tab-content feed_content">';
+          html+=pill_pane_html;
+          html+='</div>';
+          html+='</div>';
+          html+='</div>';
+
+          $("#" + category).html('').html(html);
+        }
+      }
+    });
+
+    var Language = {};
+    Language.NOT_FOUND = 'ニュースがありません';
+    Language.NOT_FOUND_SIMILAR = '関連する記事がありません'
+
+    var Settings = {};
+    Settings.MAX_TITLE_CHARS = 20;
+  </script>
   <body>
+    <div class="row">
+      <div class="col-md-2"></div>
+      <div class="col-md-8"><h1><a href="mailto:itmth19mobile@gmail.com"><span style="color:red" class="glyphicon glyphicon-th-list"></span></a>リアルタイム ニュース</h1></div>
+      <div class="col-md-2"></div>
+    </div>
+    <div class="row">
+      <div class="col-md-2"></div>
+      <div class="col-md-8" id="main_wrapper"></div>
+      <div class="col-md-2"></div>
+    </div>
+
   </body>
 </html>

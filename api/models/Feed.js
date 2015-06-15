@@ -15,6 +15,10 @@ module.exports = {
     relate: {
       collection: 'SimilarFeed',
       via: 'feed'
+    },
+    similar_found: {
+      type: 'Boolean',
+      defaultsTo: false
     }
   }
 }

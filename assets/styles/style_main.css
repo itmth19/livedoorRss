@@ -1,0 +1,17 @@
+a span.icon{
+  color: red;
+}
+
+button.setting_category{
+  width: 20%!important;
+  float: left;
+  margin: 5px;
+}
+
+.nav li a {
+  padding: 6px 15px!important;
+}
+
+.nav {
+  margin-bottom: 7px!important;
+}
