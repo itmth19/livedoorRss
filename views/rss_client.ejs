@@ -111,7 +111,7 @@
         if($("a.pill_feed_" + feed.id).length){
           var relate_html = '';
           // $.each(relate, function(i, similar_feed){
-          relate_html+='<li><a href="'+relate.link+'">'+relate.title+'</a></li>';
+          relate_html+='<li><a target="_blank" href="'+relate.link+'">'+relate.title+'</a></li>';
           // });
           // relate_html+='</ul>';
           $("#"+feed.id).append(relate_html);
@@ -144,20 +144,26 @@
 
       }
 
+      GUI.addTargetToLink = function(description){
+        var result;
+        result = description.replace('<a', '<a target="_blank"');
+        return result;
+      }
+
       GUI.pillPaneForFeed = function(feed){
         var pill_pane_html = '';
         var relate_html = '';
 
         pill_pane_html+='<div id="'+feed.id+'" class="tab-pane fade in">';
         pill_pane_html+='<h4>'+feed.title+'</h4>';
-        // pill_pane_html+='<span>'+feed.pubDate+'</span></br>';
-        pill_pane_html+='<span>'+feed.description+'</span>';
+        // pill_pane_html+='<span style="font-size: 13px">'+feed.pubDate+'</span></br>';
+        pill_pane_html+='<span>'+GUI.addTargetToLink(feed.description)+'</span>';
 
         try{
           if(feed.relate.length > 0){
             relate_html+='<h5>関連する記事</h5><ul>';
             $.each(feed.relate, function(i, similar_feed){
-              relate_html+='<li><a href="'+similar_feed.link+'">'+similar_feed.title+'</a></li>';
+              relate_html+='<li><a target="_blank" href="'+similar_feed.link+'">'+similar_feed.title+'</a></li>';
             });
             relate_html+='</ul>';
           }else{
