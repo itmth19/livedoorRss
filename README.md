@@ -2,10 +2,22 @@
 リアルタイムでRSSを得る！記事に関連するリンクをを得る！
 
 <h3>サーバー設定</h3>
-ーMongoDBが必要
-ーAdminRoleが必要
-ーNode JSが必要
-ーサーバーを起動方法： sudo sails lift
-ーサイトのPort: ２８ (http://localhost:28)
+<ul>
+<li>ーMongoDBが必要</li>
+<li>ーAdminRoleが必要</li>
+<li>ーNode JSが必要</li>
+<li>ーサーバーを起動方法： sudo sails lift</li>
+<li>ーサイトのPort: 28 (http://localhost:28)</li>
+</ul>
+
+<h3>MongoDB デフォルト 設定</h3>
+<h4>設定ファイル：/config/connections.js</h4>
+<ul>
+<li>URL: localhost</li>
+<li>PORT: 27017</li>
+<li>User: 'root'</li>
+<li>Pass: 'root'</li>
+<li>DB: rss</li>
+</ul>
 
 a [Sails](http://sailsjs.org) application
