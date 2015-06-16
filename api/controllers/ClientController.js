@@ -16,7 +16,7 @@ module.exports = {
     var categories = config.rss_categories;
     async.each(categories,
     function(_category, callback){
-      Feed.find({where:{category:_category.name}, sort: 'pubDate DESC'}).limit('10').populate('relate',{limit: 3}).exec(function onFeedFound(error, feeds){
+      Feed.find({where:{category:_category.name}, sort: 'createdAt DESC'}).limit('10').populate('relate',{limit: 3}).exec(function onFeedFound(error, feeds){
         if(error) return console.error(error);
         if(feeds.length > 0){
           // result[_category] = feeds;
