@@ -1,7 +1,7 @@
 # RealtimeNews
+<a href='https://postimg.org/image/xmph2myp1/' target='_blank'><img src='https://s18.postimg.org/xmph2myp1/Screen_Shot_2016_09_16_at_16_36_19.png' border='0' alt='postimage'/></a>
 *Read LiveDoor RSS channels in real-time*  
 *Sails.js based web application. Real-time retrievement is done on server-side*
-<img style="width=50%" src="https://s18.postimg.org/3usengbvt/Screen_Shot_2016_09_16_at_16_36_19.png" />
 
 
 # リアルタイムニュース (RealtimeNews)
