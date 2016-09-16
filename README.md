@@ -1,6 +1,7 @@
 # RealtimeNews
-*Read LiveDoor RSS channels in real-time*
+*Read LiveDoor RSS channels in real-time*  
 *Sails.js based web application. Real-time retrievement is done on server-side*
+<img src="https://s18.postimg.org/3usengbvt/Screen_Shot_2016_09_16_at_16_36_19.png" />
 
 
 # リアルタイムニュース (RealtimeNews)
