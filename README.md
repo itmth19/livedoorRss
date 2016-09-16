@@ -1,3 +1,6 @@
+# RealtimeNews
+*Read LiveDoor RSS channels in real-time*
+
 # リアルタイムニュース (RealtimeNews)
 リアルタイムでRSSを得る！記事に関連するリンクをを得る！
 
